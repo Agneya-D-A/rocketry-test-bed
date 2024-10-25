@@ -4,12 +4,15 @@ const backendPort = 3001;;
 const backendAddress = `http://localhost:${backendPort}`;
 const serialPortPath = "COM8/USB/VID_2341&PID_0043/14011";
 const baudRate = 9600;
-const connection_string = ""
+const connection_string = "mongodb://localhost:27017/static-fire-test"
 
 //Imports
 const http = require('http');
 const express = require('express');
 const mongoose = require('mongoose');
+
+//Model
+const {IncomingData} = require('./models/IncomingData');
 
 //Setup server
 const app = express();
@@ -62,7 +65,7 @@ handleSerialData(serialArray);
 
 const executionStartTime = new Date();
 
-const handleSerialData = (serialArray) =>{
+const handleSerialData = async (serialArray) =>{
     const time = new Date();
     const timeMilliSeconds = time.getTime() - executionStartTime.getTime();
     const node = {
@@ -73,6 +76,8 @@ const handleSerialData = (serialArray) =>{
     }
 
     io.emit('new-data',JSON.stringify(node));
+    const newDocument = new IncomingData(node);
+    await newDocument.save();
     console.log(node);
 }
 
